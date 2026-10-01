@@ -1,0 +1,1118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/gn8-ai/schemas/main/aim/manifest/v1.json",
+  "title": "aim/v1 manifest",
+  "type": "object",
+  "required": [
+    "$schema"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://raw.githubusercontent.com/gn8-ai/schemas/main/aim/manifest/v1.json"
+    },
+    "package": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "files": {
+          "type": "object",
+          "properties": {
+            "includes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "not": {
+                  "pattern": "^/|(?:^|/)\\.\\.(?:/|$)|[\\u0000-\\u001f\\u007f-\\u009f\\\\\\[\\]{}()!|]|\\*{3}"
+                },
+                "description": "Slash-relative aim-glob/v1 pattern. Glob compilation is validated by AIM."
+              }
+            },
+            "excludes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "not": {
+                  "pattern": "^/|(?:^|/)\\.\\.(?:/|$)|[\\u0000-\\u001f\\u007f-\\u009f\\\\\\[\\]{}()!|]|\\*{3}"
+                },
+                "description": "Slash-relative aim-glob/v1 pattern. Glob compilation is validated by AIM."
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "auto-detection": {
+          "type": "object",
+          "properties": {
+            "kinds": {
+              "type": "object",
+              "properties": {
+                "includes": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "instruction",
+                      "prompt",
+                      "command",
+                      "agent",
+                      "skill",
+                      "hook",
+                      "permission",
+                      "ignore",
+                      "mcp",
+                      "supporting-file",
+                      "extension"
+                    ]
+                  }
+                },
+                "excludes": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "instruction",
+                      "prompt",
+                      "command",
+                      "agent",
+                      "skill",
+                      "hook",
+                      "permission",
+                      "ignore",
+                      "mcp",
+                      "supporting-file",
+                      "extension"
+                    ]
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "properties": {
+              "type": "object",
+              "properties": {
+                "includes": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "instruction.applicability",
+                      "command.frontmatter",
+                      "agent.metadata",
+                      "agent.frontmatter",
+                      "skill.frontmatter",
+                      "hook.runtime-provider",
+                      "hook.shell",
+                      "hook.asynchronous",
+                      "hook.matcher",
+                      "hook.status-message",
+                      "hook.version",
+                      "mcp.enabled-tools",
+                      "mcp.disabled-tools",
+                      "mcp.header-names",
+                      "mcp.extensions"
+                    ]
+                  }
+                },
+                "excludes": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "instruction.applicability",
+                      "command.frontmatter",
+                      "agent.metadata",
+                      "agent.frontmatter",
+                      "skill.frontmatter",
+                      "hook.runtime-provider",
+                      "hook.shell",
+                      "hook.asynchronous",
+                      "hook.matcher",
+                      "hook.status-message",
+                      "hook.version",
+                      "mcp.enabled-tools",
+                      "mcp.disabled-tools",
+                      "mcp.header-names",
+                      "mcp.extensions"
+                    ]
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "cache": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "enum": [
+            "global",
+            "workspace"
+          ],
+          "default": "global"
+        },
+        "quota": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\).+$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "not": {
+                  "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:"
+                }
+              },
+              "host": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Git HTTPS authority, github/gitlab alias, or fixed SSH origin ssh://git@github.com or ssh://git@gitlab.com. Transport defaults to HTTPS; SSH only supports GitHub and GitLab with user git and no custom port.",
+                "examples": [
+                  "github",
+                  "gitlab",
+                  "git.example.org:8443"
+                ]
+              },
+              "protocol": {
+                "enum": [
+                  "ssh",
+                  "https"
+                ],
+                "description": "Optional transport for a structured remote dependency; overrides policy.default-protocol. SSH uses git at canonical github.com or gitlab.com only. Must agree with an explicit SSH origin; scalar URL schemes remain authoritative."
+              },
+              "repository": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^/:?#\\\\]+(?:/[^/:?#\\\\]+)*$"
+              },
+              "reference": {
+                "type": "object",
+                "minProperties": 1,
+                "maxProperties": 1,
+                "properties": {
+                  "tag": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "branch": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "commit": {
+                    "type": "string",
+                    "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+                  },
+                  "default": {
+                    "const": true
+                  },
+                  "semver": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": false
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "constraint": {
+                "type": "string",
+                "minLength": 1
+              },
+              "integrity": {
+                "type": "object"
+              },
+              "artifacts": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "type": "object",
+                    "properties": {
+                      "includes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "not": {
+                            "pattern": "^/|(?:^|/)\\.\\.(?:/|$)|[\\u0000-\\u001f\\u007f-\\u009f\\\\\\[\\]{}()!|]|\\*{3}"
+                          },
+                          "description": "Slash-relative aim-glob/v1 pattern. Glob compilation is validated by AIM."
+                        }
+                      },
+                      "excludes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "not": {
+                            "pattern": "^/|(?:^|/)\\.\\.(?:/|$)|[\\u0000-\\u001f\\u007f-\\u009f\\\\\\[\\]{}()!|]|\\*{3}"
+                          },
+                          "description": "Slash-relative aim-glob/v1 pattern. Glob compilation is validated by AIM."
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "auto-detection": {
+                    "type": "object",
+                    "properties": {
+                      "kinds": {
+                        "type": "object",
+                        "properties": {
+                          "includes": {
+                            "type": "array",
+                            "items": {
+                              "enum": [
+                                "instruction",
+                                "prompt",
+                                "command",
+                                "agent",
+                                "skill",
+                                "hook",
+                                "permission",
+                                "ignore",
+                                "mcp",
+                                "supporting-file",
+                                "extension"
+                              ]
+                            }
+                          },
+                          "excludes": {
+                            "type": "array",
+                            "items": {
+                              "enum": [
+                                "instruction",
+                                "prompt",
+                                "command",
+                                "agent",
+                                "skill",
+                                "hook",
+                                "permission",
+                                "ignore",
+                                "mcp",
+                                "supporting-file",
+                                "extension"
+                              ]
+                            }
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "properties": {
+                        "type": "object",
+                        "properties": {
+                          "includes": {
+                            "type": "array",
+                            "items": {
+                              "enum": [
+                                "instruction.applicability",
+                                "command.frontmatter",
+                                "agent.metadata",
+                                "agent.frontmatter",
+                                "skill.frontmatter",
+                                "hook.runtime-provider",
+                                "hook.shell",
+                                "hook.asynchronous",
+                                "hook.matcher",
+                                "hook.status-message",
+                                "hook.version",
+                                "mcp.enabled-tools",
+                                "mcp.disabled-tools",
+                                "mcp.header-names",
+                                "mcp.extensions"
+                              ]
+                            }
+                          },
+                          "excludes": {
+                            "type": "array",
+                            "items": {
+                              "enum": [
+                                "instruction.applicability",
+                                "command.frontmatter",
+                                "agent.metadata",
+                                "agent.frontmatter",
+                                "skill.frontmatter",
+                                "hook.runtime-provider",
+                                "hook.shell",
+                                "hook.asynchronous",
+                                "hook.matcher",
+                                "hook.status-message",
+                                "hook.version",
+                                "mcp.enabled-tools",
+                                "mcp.disabled-tools",
+                                "mcp.header-names",
+                                "mcp.extensions"
+                              ]
+                            }
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              },
+              "targets": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                }
+              },
+              "force-targets": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                }
+              },
+              "naming": {
+                "type": "object",
+                "properties": {
+                  "skills": {
+                    "type": "object",
+                    "properties": {
+                      "pattern": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "fallback": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "rename": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "minLength": 1,
+                          "pattern": "^[^/\\\\:{}\\u0000-\\u001f\\u007f-\\u009f]+$",
+                          "not": {
+                            "enum": [
+                              ".",
+                              ".."
+                            ]
+                          },
+                          "description": "Portable one-pass skill directory stem; exact validation is enforced by AIM."
+                        },
+                        "additionalProperties": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "pattern": "^[^/\\\\:{}\\u0000-\\u001f\\u007f-\\u009f]+$",
+                              "not": {
+                                "enum": [
+                                  ".",
+                                  ".."
+                                ]
+                              },
+                              "description": "Portable one-pass skill directory stem; exact validation is enforced by AIM."
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "description": "Exact original skill directory stem to destination mapping. null cancels an inherited mapping."
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              },
+              "mcp": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "transport"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256,
+                    "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$"
+                  },
+                  "scope": {
+                    "enum": [
+                      "project",
+                      "user"
+                    ]
+                  },
+                  "transport": {
+                    "enum": [
+                      "stdio",
+                      "http",
+                      "sse"
+                    ]
+                  },
+                  "command": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "url": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "args": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "env": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "env-names": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "literal-env-names": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "enabled-tools": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "disabled-tools": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "header-names": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "extensions": {
+                    "type": "array"
+                  },
+                  "targets": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                    }
+                  }
+                },
+                "oneOf": [
+                  {
+                    "required": [
+                      "command"
+                    ],
+                    "properties": {
+                      "transport": {
+                        "const": "stdio"
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "url"
+                      ]
+                    }
+                  },
+                  {
+                    "required": [
+                      "url"
+                    ],
+                    "properties": {
+                      "transport": {
+                        "enum": [
+                          "http",
+                          "sse"
+                        ]
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "command"
+                      ]
+                    }
+                  }
+                ],
+                "additionalProperties": false
+              }
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "source"
+                ],
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "host"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "protocol"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "repository"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "reference"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "path"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "mcp"
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "required": [
+                  "host",
+                  "repository",
+                  "reference"
+                ],
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "source"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "mcp"
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "required": [
+                  "mcp"
+                ],
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "source"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "host"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "protocol"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "repository"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "reference"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "path"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "constraint"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "integrity"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "artifacts"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "naming"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "if": {
+              "required": [
+                "host"
+              ],
+              "properties": {
+                "host": {
+                  "pattern": "^ssh://"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "protocol": {
+                  "const": "ssh"
+                }
+              }
+            },
+            "not": {
+              "required": [
+                "targets",
+                "force-targets"
+              ]
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "plugins": {
+      "type": "object"
+    },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "rules": {
+          "enum": [
+            "auto",
+            "flat",
+            "nested"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "naming": {
+      "type": "object",
+      "properties": {
+        "skills": {
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "fallback": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "rename": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^/\\\\:{}\\u0000-\\u001f\\u007f-\\u009f]+$",
+                "not": {
+                  "enum": [
+                    ".",
+                    ".."
+                  ]
+                },
+                "description": "Portable one-pass skill directory stem; exact validation is enforced by AIM."
+              },
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^/\\\\:{}\\u0000-\\u001f\\u007f-\\u009f]+$",
+                    "not": {
+                      "enum": [
+                        ".",
+                        ".."
+                      ]
+                    },
+                    "description": "Portable one-pass skill directory stem; exact validation is enforced by AIM."
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": "Exact original skill directory stem to destination mapping. null cancels an inherited mapping."
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "options": {
+      "type": "object",
+      "properties": {
+        "skill-invocation-fallback-via-command": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "naming": {
+              "type": "object",
+              "properties": {
+                "pattern": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "fallback": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                }
+              },
+              "additionalProperties": false
+            },
+            "frontmatter": {
+              "type": "object"
+            },
+            "content": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "targetAll": {
+      "type": "boolean"
+    },
+    "targets": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+          },
+          {
+            "type": "object",
+            "required": [
+              "target"
+            ],
+            "properties": {
+              "target": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+              },
+              "output": {
+                "type": "string"
+              },
+              "naming": {
+                "type": "object",
+                "properties": {
+                  "defaults": {
+                    "type": "object",
+                    "properties": {
+                      "pattern": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "fallback": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "rules": {
+                    "type": "object",
+                    "properties": {
+                      "pattern": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "fallback": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "prompts": {
+                    "type": "object",
+                    "properties": {
+                      "pattern": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "fallback": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "commands": {
+                    "type": "object",
+                    "properties": {
+                      "pattern": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "fallback": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "agents": {
+                    "type": "object",
+                    "properties": {
+                      "pattern": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "fallback": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "skills": {
+                    "type": "object",
+                    "properties": {
+                      "pattern": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "fallback": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "rename": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "minLength": 1,
+                          "pattern": "^[^/\\\\:{}\\u0000-\\u001f\\u007f-\\u009f]+$",
+                          "not": {
+                            "enum": [
+                              ".",
+                              ".."
+                            ]
+                          },
+                          "description": "Portable one-pass skill directory stem; exact validation is enforced by AIM."
+                        },
+                        "additionalProperties": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "pattern": "^[^/\\\\:{}\\u0000-\\u001f\\u007f-\\u009f]+$",
+                              "not": {
+                                "enum": [
+                                  ".",
+                                  ".."
+                                ]
+                              },
+                              "description": "Portable one-pass skill directory stem; exact validation is enforced by AIM."
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "description": "Exact original skill directory stem to destination mapping. null cancels an inherited mapping."
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              },
+              "skill-invocation-fallback-via-command": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "naming": {
+                    "type": "object",
+                    "properties": {
+                      "pattern": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "fallback": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "frontmatter": {
+                    "type": "object"
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "excluded": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "if": {
+                  "required": [
+                    "excluded"
+                  ],
+                  "properties": {
+                    "excluded": {
+                      "const": true
+                    }
+                  }
+                },
+                "then": {
+                  "not": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "output"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "naming"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "skill-invocation-fallback-via-command"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "tasks": {
+      "type": "object"
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "default-protocol": {
+          "enum": [
+            "ssh",
+            "https"
+          ],
+          "description": "Default transport for this manifest's structured remote dependencies with a bare host and no protocol. Defaults to HTTPS. SSH only supports github/github.com and gitlab/gitlab.com. Explicit dependency protocols and URL transports win; local dependencies are unaffected."
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
